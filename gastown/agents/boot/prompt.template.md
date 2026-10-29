@@ -105,7 +105,7 @@ Use this fallback only if you exited a cycle without running `next-iteration`
 pour again.
 
 ```bash
-# Wisp roots are molecules (never --type=wisp, which is not a valid gc bd type
+# Wisp roots are molecules (never --type=wisp, which is not a valid bead type
 # and matches nothing). They are also ephemeral, so they live in the wisps tier
 # that gc bd list hides without --include-infra; drop that flag and these
 # queries return [] even when a wisp is assigned, and you pour a duplicate.

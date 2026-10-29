@@ -1224,7 +1224,7 @@ Reuse an already-queued wisp instead of pouring a duplicate. A prior cycle
 may have poured a next wisp without burning, or a restart may have raced —
 keep one open patrol wisp and burn any surplus, so wisps never accumulate.
 Wisp roots are `issue_type=molecule` (never `--type=wisp`, which is not a
-valid gc bd type and matches nothing). They are also ephemeral, so they live
+valid bead type and matches nothing). They are also ephemeral, so they live
 in the wisps tier that `gc bd list` hides without `--include-infra` — drop that
 flag and this query returns `[]` even when a wisp is already queued.
 ```bash
