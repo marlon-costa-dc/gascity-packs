@@ -534,6 +534,7 @@ def resolve_formula(root: pathlib.Path, name: str, seen: tuple[str, ...] = ()) -
         "description": data.get("description", ""),
         "version": data.get("version", 1),
         "contract": data.get("contract", ""),
+        "requires": data.get("requires", {}),
         "target_required": data.get("target_required"),
         "vars": {},
         "steps": [],
@@ -756,7 +757,7 @@ class FormulaAssetTests(unittest.TestCase):
             data = tomllib.loads(path.read_text(encoding="utf-8"))
             name = path.name.removesuffix(".formula.toml")
             self.assertEqual(data["formula"], name)
-            self.assertEqual(data["contract"], "graph.v2")
+            self.assertEqual(data["requires"]["formula_compiler"], ">=2.0.0")
             var_names = set(data.get("vars", {}))
             self.assertNotIn("issue", var_names)
             self.assertNotIn("bead_id", var_names)
@@ -1472,7 +1473,7 @@ class FormulaAssetTests(unittest.TestCase):
             with self.subTest(formula=name):
                 data = load_formula(root, name)
                 self.assertEqual(data["formula"], name)
-                self.assertEqual(data["contract"], "graph.v2")
+                self.assertEqual(data["requires"]["formula_compiler"], ">=2.0.0")
                 self.assertTrue(data["internal"])
                 self.assertNotIn("catalog", data)
                 self.assertNotIn("extends", data)
@@ -2055,7 +2056,7 @@ class FormulaAssetTests(unittest.TestCase):
         root = pathlib.Path(__file__).resolve().parents[1]
         review = load_formula(root, "build-basic-review")
         self.assertEqual(review["type"], "expansion")
-        self.assertEqual(review["contract"], "graph.v2")
+        self.assertEqual(review["requires"]["formula_compiler"], ">=2.0.0")
         self.assertEqual(
             review["vars"]["implementation_target"]["default"],
             "gc.implementation-worker",
@@ -4002,7 +4003,7 @@ class FormulaAssetTests(unittest.TestCase):
         for name, (url_var, optional_vars) in expected.items():
             with self.subTest(name=name):
                 data = resolve_formula(root, name)
-                self.assertEqual(data["contract"], "graph.v2")
+                self.assertEqual(data["requires"]["formula_compiler"], ">=2.0.0")
                 self.assertFalse(data["target_required"])
                 self.assertTrue(data["vars"][url_var]["required"])
                 self.assertEqual(set(data["vars"]) - {url_var}, optional_vars)
