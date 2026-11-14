@@ -8,6 +8,8 @@ formulas, skills, hooks, template fragments, or any combination. Packs compose
 through `pack.toml` imports, so a city can opt into any subset of the packs in
 this repo without forking.
 
+This downstream fork publishes qualified packs from `dc-use`. See the [fork workflow](FORK.md) for contribution, synchronization and release rules.
+
 For the full model (cities, rigs, formulas, beads, runtime providers) see the
 [Gas City README](https://github.com/gastownhall/gascity).
 
