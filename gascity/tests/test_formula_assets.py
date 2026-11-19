@@ -533,16 +533,15 @@ def resolve_formula(root: pathlib.Path, name: str, seen: tuple[str, ...] = ()) -
         "formula": data["formula"],
         "description": data.get("description", ""),
         "version": data.get("version", 1),
-        "contract": data.get("contract", ""),
-        "requires": data.get("requires", {}),
+        "requires": dict(data.get("requires", {})),
         "target_required": data.get("target_required"),
         "vars": {},
         "steps": [],
     }
     for parent in parents:
         parent_data = resolve_formula(root, parent, (*seen, name))
-        if not merged["contract"]:
-            merged["contract"] = parent_data.get("contract", "")
+        for key, constraint in parent_data.get("requires", {}).items():
+            merged["requires"].setdefault(key, constraint)
         if merged["target_required"] is None:
             merged["target_required"] = parent_data.get("target_required")
         merged["vars"].update(parent_data.get("vars", {}))
@@ -567,15 +566,15 @@ def resolve_formula_from_dirs(formula_dirs: list[pathlib.Path], name: str, seen:
         "formula": data["formula"],
         "description": data.get("description", ""),
         "version": data.get("version", 1),
-        "contract": data.get("contract", ""),
+        "requires": dict(data.get("requires", {})),
         "target_required": data.get("target_required"),
         "vars": {},
         "steps": [],
     }
     for parent in parents:
         parent_data = resolve_formula_from_dirs(formula_dirs, parent, (*seen, name))
-        if not merged["contract"]:
-            merged["contract"] = parent_data.get("contract", "")
+        for key, constraint in parent_data.get("requires", {}).items():
+            merged["requires"].setdefault(key, constraint)
         if merged["target_required"] is None:
             merged["target_required"] = parent_data.get("target_required")
         merged["vars"].update(parent_data.get("vars", {}))
@@ -919,7 +918,7 @@ class FormulaAssetTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, close)
 
-        # The fragment is shared by every graph.v2 worker in gascity and the
+        # The fragment is shared by every formulas v2 worker in gascity and the
         # derived packs. A hard-coded coordinator recipient, or a mail send
         # chained in front of the close, strands the claimed bead whenever that
         # recipient does not resolve or the mail store is unavailable.
@@ -2513,7 +2512,7 @@ class FormulaAssetTests(unittest.TestCase):
                     expansion = load_formula(pack_root, expansion_name)
                     self.assertEqual(expansion["formula"], expansion_name)
                     self.assertEqual(expansion["type"], "expansion")
-                    self.assertEqual(expansion["contract"], "graph.v2")
+                    self.assertEqual(expansion["requires"]["formula_compiler"], ">=2.0.0")
 
                     nodes = formula_nodes(expansion)
                     self.assertGreaterEqual(len(nodes), 4)
@@ -2540,7 +2539,7 @@ class FormulaAssetTests(unittest.TestCase):
             item_formula = load_formula(pack_root, expected["implementation_formula"])
             with self.subTest(pack=pack_name, item_formula=expected["implementation_formula"]):
                 self.assertEqual(item_formula["formula"], expected["implementation_formula"])
-                self.assertEqual(item_formula["contract"], "graph.v2")
+                self.assertEqual(item_formula["requires"]["formula_compiler"], ">=2.0.0")
                 self.assertEqual(item_formula["extends"], ["do-work"])
                 self.assertNotEqual(item_formula.get("type"), "expansion")
                 self.assertTrue(item_formula["target_required"])
@@ -2616,7 +2615,7 @@ class FormulaAssetTests(unittest.TestCase):
             shared_item_formula = load_formula(pack_root, expected["implementation_item_formula"])
             with self.subTest(pack=pack_name, item_formula=expected["implementation_item_formula"]):
                 self.assertEqual(shared_item_formula["formula"], expected["implementation_item_formula"])
-                self.assertEqual(shared_item_formula["contract"], "graph.v2")
+                self.assertEqual(shared_item_formula["requires"]["formula_compiler"], ">=2.0.0")
                 self.assertEqual(shared_item_formula["extends"], ["do-work-item"])
                 self.assertNotEqual(shared_item_formula.get("type"), "expansion")
                 self.assertTrue(shared_item_formula["target_required"])
@@ -4179,8 +4178,10 @@ class FormulaAssetTests(unittest.TestCase):
 formula = "github-issue-fix"
 extends = ["github-issue-fix-base"]
 version = 1
-contract = "graph.v2"
 target_required = false
+
+[requires]
+formula_compiler = ">=2.0.0"
 
 [catalog]
 name = "github-issue-fix"
@@ -4200,8 +4201,10 @@ description = "Override sink that preserves the base issue-fix protocol."
 formula = "github-issue-triage"
 extends = ["github-issue-triage-base"]
 version = 1
-contract = "graph.v2"
 target_required = false
+
+[requires]
+formula_compiler = ">=2.0.0"
 
 [catalog]
 name = "github-issue-triage"
